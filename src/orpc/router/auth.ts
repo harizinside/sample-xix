@@ -1,8 +1,27 @@
+import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 
 import { auth } from "@/lib/auth";
 import { os } from "@/orpc";
 import { authMiddleware } from "@/orpc/middleware/auth";
+
+function handleAuthError(error: unknown): never {
+  if (
+    error instanceof Error &&
+    "statusCode" in error &&
+    "body" in error
+  ) {
+    const apiError = error as {
+      statusCode: number;
+      body: { message?: string; code?: string };
+    };
+    throw new ORPCError(apiError.body.code ?? "BAD_REQUEST", {
+      status: apiError.statusCode,
+      message: apiError.body.message,
+    });
+  }
+  throw error;
+}
 
 // Schemas
 export const SignUpSchema = z.object({
@@ -23,29 +42,37 @@ export const SignInSchema = z.object({
 export const signUp = os
   .input(SignUpSchema)
   .handler(async ({ input, context }) => {
-    const data = await auth.api.signUpEmail({
-      body: {
-        name: input.name,
-        email: input.email,
-        password: input.password,
-        phoneNumber: input.phoneNumber,
-      },
-      headers: context.reqHeaders!,
-    });
-    return data;
+    try {
+      const data = await auth.api.signUpEmail({
+        body: {
+          name: input.name,
+          email: input.email,
+          password: input.password,
+          phoneNumber: input.phoneNumber,
+        },
+        headers: context.reqHeaders!,
+      });
+      return data;
+    } catch (error) {
+      handleAuthError(error);
+    }
   });
 
 export const signIn = os
   .input(SignInSchema)
   .handler(async ({ input, context }) => {
-    const data = await auth.api.signInEmail({
-      body: {
-        email: input.email,
-        password: input.password,
-      },
-      headers: context.reqHeaders!,
-    });
-    return data;
+    try {
+      const data = await auth.api.signInEmail({
+        body: {
+          email: input.email,
+          password: input.password,
+        },
+        headers: context.reqHeaders!,
+      });
+      return data;
+    } catch (error) {
+      handleAuthError(error);
+    }
   });
 
 export const requestPasswordReset = os
@@ -56,14 +83,18 @@ export const requestPasswordReset = os
     }),
   )
   .handler(async ({ input, context }) => {
-    const data = await auth.api.requestPasswordReset({
-      body: {
-        email: input.email,
-        redirectTo: input.redirectTo,
-      },
-      headers: context.reqHeaders!,
-    });
-    return data;
+    try {
+      const data = await auth.api.requestPasswordReset({
+        body: {
+          email: input.email,
+          redirectTo: input.redirectTo,
+        },
+        headers: context.reqHeaders!,
+      });
+      return data;
+    } catch (error) {
+      handleAuthError(error);
+    }
   });
 
 export const resetPassword = os
@@ -74,14 +105,18 @@ export const resetPassword = os
     }),
   )
   .handler(async ({ input, context }) => {
-    const data = await auth.api.resetPassword({
-      body: {
-        newPassword: input.newPassword,
-        token: input.token,
-      },
-      headers: context.reqHeaders!,
-    });
-    return data;
+    try {
+      const data = await auth.api.resetPassword({
+        body: {
+          newPassword: input.newPassword,
+          token: input.token,
+        },
+        headers: context.reqHeaders!,
+      });
+      return data;
+    } catch (error) {
+      handleAuthError(error);
+    }
   });
 
 // Protected procedures (auth required)
@@ -110,14 +145,18 @@ export const changePassword = os
     }),
   )
   .handler(async ({ input, context }) => {
-    const data = await auth.api.changePassword({
-      body: {
-        currentPassword: input.currentPassword,
-        newPassword: input.newPassword,
-      },
-      headers: context.reqHeaders!,
-    });
-    return data;
+    try {
+      const data = await auth.api.changePassword({
+        body: {
+          currentPassword: input.currentPassword,
+          newPassword: input.newPassword,
+        },
+        headers: context.reqHeaders!,
+      });
+      return data;
+    } catch (error) {
+      handleAuthError(error);
+    }
   });
 
 export const updateUser = os
@@ -129,9 +168,13 @@ export const updateUser = os
     }),
   )
   .handler(async ({ input, context }) => {
-    const data = await auth.api.updateUser({
-      body: input,
-      headers: context.reqHeaders!,
-    });
-    return data;
+    try {
+      const data = await auth.api.updateUser({
+        body: input,
+        headers: context.reqHeaders!,
+      });
+      return data;
+    } catch (error) {
+      handleAuthError(error);
+    }
   });
