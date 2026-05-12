@@ -1,7 +1,11 @@
+import { SmartCoercionPlugin } from "@orpc/json-schema";
+import { OpenAPIHandler } from "@orpc/openapi/fetch";
+import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
 import { onError } from "@orpc/server";
-import { CompressionPlugin, RPCHandler } from "@orpc/server/fetch";
+import { CompressionPlugin } from "@orpc/server/fetch";
 import { CORSPlugin, RequestHeadersPlugin } from "@orpc/server/plugins";
 import { getFilenameFromContentDisposition } from "@orpc/standard-server";
+import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { createFileRoute } from "@tanstack/react-router";
 
 import router from "@/orpc/router";
@@ -12,7 +16,7 @@ interface OverrideBodyContext {
   fetchRequest: Request;
 }
 
-const handler = new RPCHandler(router, {
+const handler = new OpenAPIHandler(router, {
   plugins: [
     new CompressionPlugin(),
     new CORSPlugin({
@@ -28,6 +32,27 @@ const handler = new RPCHandler(router, {
       ],
     }),
     new RequestHeadersPlugin(),
+    new SmartCoercionPlugin({
+      schemaConverters: [new ZodToJsonSchemaConverter()],
+    }),
+    new OpenAPIReferencePlugin({
+      schemaConverters: [new ZodToJsonSchemaConverter()],
+      specGenerateOptions: {
+        info: {
+          title: "SIMRS API",
+          version: "1.0.0",
+        },
+      },
+      docsConfig: {
+        authentication: {
+          securitySchemes: {
+            bearerAuth: {
+              token: "default-token",
+            },
+          },
+        },
+      },
+    }),
   ],
   interceptors: [
     onError(error => {
@@ -69,19 +94,14 @@ const handler = new RPCHandler(router, {
               contentDisposition === null &&
               contentType?.startsWith("multipart/form-data")
             ) {
-              // Custom handling for multipart/form-data
-              // Example: use @mjackson/form-data-parser for streaming parsing
               return fetchRequest.formData();
             }
 
-            // if has content-disposition always treat as file upload
             if (
               contentDisposition !== null ||
               (!contentType?.startsWith("application/json") &&
                 !contentType?.startsWith("application/x-www-form-urlencoded"))
             ) {
-              // Custom handling for file uploads
-              // Example: streaming file into disk to reduce memory usage
               const fileName =
                 getFilenameFromContentDisposition(contentDisposition ?? "") ??
                 "blob";
@@ -91,7 +111,6 @@ const handler = new RPCHandler(router, {
               });
             }
 
-            // fallback to default body parser
             return options.request.body();
           },
         },
@@ -100,13 +119,13 @@ const handler = new RPCHandler(router, {
   ],
 });
 
-export const Route = createFileRoute("/api/rpc/$")({
+export const Route = createFileRoute("/api/openapi/$")({
   server: {
     handlers: {
       ANY: async ({ request }: { request: Request }) => {
         const { matched, response } = await handler.handle(request, {
-          prefix: "/api/rpc",
-          context: request.headers, // Provide initial context if needed
+          prefix: "/api/openapi",
+          context: {},
         });
 
         if (matched) {
