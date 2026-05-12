@@ -21,16 +21,16 @@
       "command": "uvx",
       "args": ["postgres-mcp", "--access-mode=unrestricted"],
       "env": {
-        "DATABASE_URI": "postgresql://postgres:postgres@localhost:5432/start-true"
+        "DATABASE_URI": "postgresql://root:password@127.0.0.1:5432/sample-xix?schema=public"
       }
     },
     "playwright": {
       "command": "npx",
       "args": ["@playwright/mcp@latest"]
     },
-    "gitmcp": {
+    "sample-xix Docs": {
       "type": "sse",
-      "url": "https://gitmcp.io/{owner}/{repo}"
+      "url": "https://gitmcp.io/harizinside/sample-xix"
     }
   }
 }
