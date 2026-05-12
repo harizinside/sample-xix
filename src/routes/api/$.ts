@@ -119,12 +119,12 @@ const handler = new OpenAPIHandler(router, {
   ],
 });
 
-export const Route = createFileRoute("/api/openapi/$")({
+export const Route = createFileRoute("/api/$")({
   server: {
     handlers: {
       ANY: async ({ request }: { request: Request }) => {
         const { matched, response } = await handler.handle(request, {
-          prefix: "/api/openapi",
+          prefix: "/api",
           context: {},
         });
 

@@ -16,6 +16,7 @@ import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiSplatRouteImport } from './routes/api/$'
 import { Route as AuthRecoverySplatRouteImport } from './routes/auth/recovery.$'
 import { Route as ApiRpcSplatRouteImport } from './routes/api/rpc.$'
 import { Route as ApiFilesSplatRouteImport } from './routes/api/files.$'
@@ -55,6 +56,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
   path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSplatRoute = ApiSplatRouteImport.update({
+  id: '/api/$',
+  path: '/api/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRecoverySplatRoute = AuthRecoverySplatRouteImport.update({
   id: '/recovery/$',
   path: '/recovery/$',
@@ -79,6 +85,7 @@ const ApiAssetsSplatRoute = ApiAssetsSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof DashboardIndexRoute
   '/auth': typeof AuthRouteRouteWithChildren
+  '/api/$': typeof ApiSplatRoute
   '/api/health': typeof ApiHealthRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/auth/recovery/$': typeof AuthRecoverySplatRoute
 }
 export interface FileRoutesByTo {
+  '/api/$': typeof ApiSplatRoute
   '/api/health': typeof ApiHealthRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_dashboard': typeof DashboardRouteRouteWithChildren
   '/auth': typeof AuthRouteRouteWithChildren
+  '/api/$': typeof ApiSplatRoute
   '/api/health': typeof ApiHealthRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
@@ -118,6 +127,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/api/$'
     | '/api/health'
     | '/auth/forgot-password'
     | '/auth/sign-in'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/auth/recovery/$'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/api/$'
     | '/api/health'
     | '/auth/forgot-password'
     | '/auth/sign-in'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_dashboard'
     | '/auth'
+    | '/api/$'
     | '/api/health'
     | '/auth/forgot-password'
     | '/auth/sign-in'
@@ -155,6 +167,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
+  ApiSplatRoute: typeof ApiSplatRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiAssetsSplatRoute: typeof ApiAssetsSplatRoute
   ApiFilesSplatRoute: typeof ApiFilesSplatRoute
@@ -210,6 +223,13 @@ declare module '@tanstack/react-router' {
       path: '/api/health'
       fullPath: '/api/health'
       preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/$': {
+      id: '/api/$'
+      path: '/api/$'
+      fullPath: '/api/$'
+      preLoaderRoute: typeof ApiSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/recovery/$': {
@@ -276,6 +296,7 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   DashboardRouteRoute: DashboardRouteRouteWithChildren,
   AuthRouteRoute: AuthRouteRouteWithChildren,
+  ApiSplatRoute: ApiSplatRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiAssetsSplatRoute: ApiAssetsSplatRoute,
   ApiFilesSplatRoute: ApiFilesSplatRoute,
